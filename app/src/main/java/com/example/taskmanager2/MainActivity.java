@@ -1,11 +1,14 @@
 package com.example.taskmanager2;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -15,8 +18,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
+import android.Manifest;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -32,8 +34,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskClickListener {
+    private static final int REQUEST_POST_NOTIFICATIONS = 1;
 
-    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1001;
     private RecyclerView recyclerView;
     private TaskAdapter adapter;
     private DatabaseHelper dbHelper;
@@ -47,30 +49,35 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        checkNotificationPermission();
+
+        requestExactAlarmPermission();
+        // Request exact alarm permission for Android 12+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!getSystemService(AlarmManager.class).canScheduleExactAlarms()) {
+                Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                startActivity(intent);
+            }
+        }
+
+        // Request POST_NOTIFICATIONS permission for Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1001);
+            }
+        }
         initializeComponents();
         setupRecyclerView();
         setupSpinners();
-
-        requestNotificationPermission();
     }
 
-    // Method to request notification permission for Android 13+
-    private void requestNotificationPermission() {
-        // No permission checks are necessary
-        // Simply leave the method empty or remove it if not needed
-    }
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted, you can schedule notifications now
-                Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show();
-            } else {
-                // Permission denied, show message
-                Toast.makeText(this, "Notification permission is required", Toast.LENGTH_SHORT).show();
+    private void checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                    != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.POST_NOTIFICATIONS},
+                        REQUEST_POST_NOTIFICATIONS);
             }
         }
     }
@@ -130,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         EditText titleEdit = view.findViewById(R.id.edit_title);
         EditText descEdit = view.findViewById(R.id.edit_description);
         DatePicker datePicker = view.findViewById(R.id.date_picker);
-        TextView timeText = view.findViewById(R.id.text_time);  // Make sure this is a TextView in your XML
+        TextView timeText = view.findViewById(R.id.text_time);
         Spinner prioritySpinner = view.findViewById(R.id.spinner_priority);
         Spinner categorySpinner = view.findViewById(R.id.spinner_category);
 
@@ -178,11 +185,14 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                     taskList.add(task);
                     adapter.notifyItemInserted(taskList.size() - 1);
 
+                    // Schedule the notification after adding the task
                     notificationHelper.scheduleNotification(task);
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
+
 
 
     private void showEditTaskDialog(Task task) {
@@ -315,7 +325,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     }
 
     // Existing interface implementations
-
     @Override
     public void onTaskClick(Task task) {
         showEditTaskDialog(task);
@@ -355,4 +364,16 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         dbHelper.close();
         super.onDestroy();
     }
+
+    private void requestExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+
+            if (!alarmManager.canScheduleExactAlarms()) {
+                Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                startActivity(intent);
+            }
+        }
+    }
+
 }
