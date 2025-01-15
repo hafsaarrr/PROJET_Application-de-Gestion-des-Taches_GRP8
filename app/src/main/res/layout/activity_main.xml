@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,7 +10,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Titre de l'application -->
+        <!-- Title of the Application -->
         <TextView
             android:id="@+id/app_title"
             android:layout_width="match_parent"
@@ -22,7 +23,7 @@
             android:textSize="34sp"
             android:textStyle="bold" />
 
-        <!-- Spinner de tri -->
+        <!-- Sorting Spinner -->
         <Spinner
             android:id="@+id/sort_spinner"
             android:layout_width="match_parent"
@@ -30,7 +31,7 @@
             android:layout_margin="8dp"
             android:entries="@array/sort_options" />
 
-        <!-- Spinner de filtrage -->
+        <!-- Filtering Spinner -->
         <Spinner
             android:id="@+id/filter_spinner"
             android:layout_width="match_parent"
@@ -38,7 +39,7 @@
             android:layout_margin="8dp"
             android:entries="@array/filter_options" />
 
-        <!-- Liste des tâches -->
+        <!-- Task List -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
@@ -48,7 +49,7 @@
             android:clipToPadding="false" />
     </LinearLayout>
 
-    <!-- Bouton pour ajouter une tâche -->
+    <!-- Button to Add a Task -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_task"
         android:layout_width="wrap_content"
@@ -57,4 +58,5 @@
         android:layout_margin="16dp"
         android:src="@drawable/ic_add"
         app:fabSize="normal" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

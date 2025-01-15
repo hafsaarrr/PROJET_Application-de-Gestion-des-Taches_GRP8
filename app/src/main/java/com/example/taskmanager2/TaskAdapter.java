@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
     private List<Task> taskList;
@@ -23,7 +24,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     public interface OnTaskClickListener {
         void onTaskClick(Task task);
         void onTaskLongClick(Task task);
-        void onDeleteClick(Task task); // Nouvelle méthode
+        void onDeleteClick(Task task);
     }
 
     public TaskAdapter(Context context, List<Task> taskList, OnTaskClickListener listener) {
@@ -43,12 +44,39 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         Task task = taskList.get(position);
+
+        // Set title
         holder.titleText.setText(task.getTitle());
-        holder.dateText.setText(new SimpleDateFormat("dd/MM/yyyy").format(new Date(task.getDueDate())));
-        holder.priorityText.setText("Priority: " + task.getPriority());
+
+        // Format and set date with time
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        String dateStr = dateFormat.format(new Date(task.getDueDate()));
+        String timeStr = String.format(Locale.getDefault(), "%02d:%02d",
+                task.getDueHours(),
+                task.getDueMinutes());
+        holder.dateText.setText(String.format("%s at %s", dateStr, timeStr));
+
+        // Set priority with more detailed information
+        String priorityLabel;
+        switch (task.getPriority()) {
+            case 1:
+                priorityLabel = "High Priority";
+                break;
+            case 2:
+                priorityLabel = "Medium Priority";
+                break;
+            case 3:
+                priorityLabel = "Low Priority";
+                break;
+            default:
+                priorityLabel = "Priority: " + task.getPriority();
+        }
+        holder.priorityText.setText(priorityLabel);
+
+        // Set category
         holder.categoryText.setText(task.getCategory());
 
-        // Gestionnaire du clic sur le bouton de suppression
+        // Delete button handler
         holder.deleteButton.setOnClickListener(v -> {
             if (listener != null) {
                 int adapterPosition = holder.getAdapterPosition();
@@ -62,19 +90,32 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         // Set background color based on priority
         int color;
         switch (task.getPriority()) {
-            case 3:
-                color = ContextCompat.getColor(context, R.color.priority_low);
+            case 1:
+                color = ContextCompat.getColor(context, R.color.priority_high);
                 break;
             case 2:
                 color = ContextCompat.getColor(context, R.color.priority_medium);
                 break;
-            case 1:
-                color = ContextCompat.getColor(context, R.color.priority_high);
+            case 3:
+                color = ContextCompat.getColor(context, R.color.priority_low);
                 break;
             default:
                 color = ContextCompat.getColor(context, R.color.priority_low);
         }
         holder.itemView.setBackgroundColor(color);
+
+        // Optional: Add visual indication for tasks due soon
+        if (isTaskDueSoon(task)) {
+            holder.dateText.setTextColor(ContextCompat.getColor(context, android.R.color.holo_red_dark));
+        } else {
+            holder.dateText.setTextColor(ContextCompat.getColor(context, android.R.color.black));
+        }
+    }
+
+    private boolean isTaskDueSoon(Task task) {
+        long currentTime = System.currentTimeMillis();
+        // Consider task due soon if it's within 24 hours
+        return (task.getDueDate() - currentTime) <= 24 * 60 * 60 * 1000;
     }
 
     @Override
@@ -83,12 +124,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     }
 
     public void updateTasks(List<Task> newTasks) {
-        taskList.clear(); // Vider la liste actuelle
-        taskList.addAll(newTasks); // Ajouter les nouvelles tâches
-        notifyDataSetChanged(); // Rafraîchir l'affichage
+        taskList.clear();
+        taskList.addAll(newTasks);
+        notifyDataSetChanged();
     }
 
-    // Alternative plus efficace avec animation :
     public void removeTask(Task task) {
         int position = taskList.indexOf(task);
         if (position != -1) {
@@ -97,7 +137,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             notifyItemRangeChanged(position, taskList.size());
         }
     }
-
 
     class TaskViewHolder extends RecyclerView.ViewHolder {
         TextView titleText, dateText, priorityText, categoryText;

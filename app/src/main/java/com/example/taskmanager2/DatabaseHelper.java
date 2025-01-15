@@ -13,13 +13,14 @@ import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "TaskManager";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2; // Increased version for schema change
 
     private static final String TABLE_TASKS = "tasks";
     private static final String KEY_ID = "id";
     private static final String KEY_TITLE = "title";
     private static final String KEY_DESCRIPTION = "description";
-    private static final String KEY_DUE_DATE = "due_date";
+    private static final String KEY_DUE_DATE = "due_date"; // Stored in milliseconds
+    private static final String KEY_DUE_TIME = "due_time"; // Store time in minutes since midnight
     private static final String KEY_PRIORITY = "priority";
     private static final String KEY_CATEGORY = "category";
     private static final String KEY_COMPLETED = "completed";
@@ -34,7 +35,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + KEY_TITLE + " TEXT,"
                 + KEY_DESCRIPTION + " TEXT,"
-                + KEY_DUE_DATE + " INTEGER,"
+                + KEY_DUE_DATE + " INTEGER," // Store full date in milliseconds
+                + KEY_DUE_TIME + " INTEGER," // Store minutes since midnight (0-1439)
                 + KEY_PRIORITY + " INTEGER,"
                 + KEY_CATEGORY + " TEXT,"
                 + KEY_COMPLETED + " INTEGER" + ")";
@@ -43,8 +45,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TASKS);
-        onCreate(db);
+        if (oldVersion < 2) {
+            // Add the new time column to existing table
+            db.execSQL("ALTER TABLE " + TABLE_TASKS + " ADD COLUMN " + KEY_DUE_TIME + " INTEGER DEFAULT 0");
+        }
     }
 
     // Add a new task
@@ -54,6 +58,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(KEY_TITLE, task.getTitle());
         values.put(KEY_DESCRIPTION, task.getDescription());
         values.put(KEY_DUE_DATE, task.getDueDate());
+        values.put(KEY_DUE_TIME, task.getDueTimeInMinutes());
         values.put(KEY_PRIORITY, task.getPriority());
         values.put(KEY_CATEGORY, task.getCategory());
         values.put(KEY_COMPLETED, task.isCompleted() ? 1 : 0);
@@ -75,6 +80,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             task.setTitle(cursor.getString(cursor.getColumnIndex(KEY_TITLE)));
             task.setDescription(cursor.getString(cursor.getColumnIndex(KEY_DESCRIPTION)));
             task.setDueDate(cursor.getLong(cursor.getColumnIndex(KEY_DUE_DATE)));
+            task.setDueTimeInMinutes(cursor.getInt(cursor.getColumnIndex(KEY_DUE_TIME)));
             task.setPriority(cursor.getInt(cursor.getColumnIndex(KEY_PRIORITY)));
             task.setCategory(cursor.getString(cursor.getColumnIndex(KEY_CATEGORY)));
             task.setCompleted(cursor.getInt(cursor.getColumnIndex(KEY_COMPLETED)) == 1);
@@ -119,6 +125,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 task.setTitle(cursor.getString(cursor.getColumnIndex(KEY_TITLE)));
                 task.setDescription(cursor.getString(cursor.getColumnIndex(KEY_DESCRIPTION)));
                 task.setDueDate(cursor.getLong(cursor.getColumnIndex(KEY_DUE_DATE)));
+                task.setDueTimeInMinutes(cursor.getInt(cursor.getColumnIndex(KEY_DUE_TIME)));
                 task.setPriority(cursor.getInt(cursor.getColumnIndex(KEY_PRIORITY)));
                 task.setCategory(cursor.getString(cursor.getColumnIndex(KEY_CATEGORY)));
                 task.setCompleted(cursor.getInt(cursor.getColumnIndex(KEY_COMPLETED)) == 1);
@@ -135,6 +142,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(KEY_TITLE, task.getTitle());
         values.put(KEY_DESCRIPTION, task.getDescription());
         values.put(KEY_DUE_DATE, task.getDueDate());
+        values.put(KEY_DUE_TIME, task.getDueTimeInMinutes());
         values.put(KEY_PRIORITY, task.getPriority());
         values.put(KEY_CATEGORY, task.getCategory());
         values.put(KEY_COMPLETED, task.isCompleted() ? 1 : 0);

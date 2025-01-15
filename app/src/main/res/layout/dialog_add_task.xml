@@ -30,6 +30,40 @@
         android:calendarViewShown="false"
         android:datePickerMode="spinner"/>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Label for Time -->
+        <TextView
+            android:id="@+id/label_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Time"
+            android:textSize="16sp"
+            android:textColor="@android:color/black"
+            android:paddingBottom="4dp"
+            android:layout_marginBottom="8dp"
+            android:fontFamily="sans-serif-medium" />
+
+        <!-- Time TextView -->
+        <TextView
+            android:id="@+id/text_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Time"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:padding="8dp"
+            android:onClick="onClickTime"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+
+
     <Spinner
         android:id="@+id/spinner_priority"
         android:layout_width="match_parent"
