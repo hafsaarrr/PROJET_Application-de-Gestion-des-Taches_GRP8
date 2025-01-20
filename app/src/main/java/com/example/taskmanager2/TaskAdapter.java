@@ -104,12 +104,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         }
         holder.itemView.setBackgroundColor(color);
 
-        // Optional: Add visual indication for tasks due soon
-        if (isTaskDueSoon(task)) {
-            holder.dateText.setTextColor(ContextCompat.getColor(context, android.R.color.holo_red_dark));
-        } else {
-            holder.dateText.setTextColor(ContextCompat.getColor(context, android.R.color.black));
-        }
     }
 
     private boolean isTaskDueSoon(Task task) {

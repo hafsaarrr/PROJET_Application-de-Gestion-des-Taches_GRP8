@@ -302,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         adapter.updateTasks(sortedList);
     }
 
-    private void filterTasks(int filterOption) {
+    private void filterTasks(int filterOption) {//utilisation dans l interface
         List<Task> filteredList;
         switch (filterOption) {
             case 0: // All Tasks

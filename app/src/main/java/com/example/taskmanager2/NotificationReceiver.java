@@ -11,18 +11,29 @@ public class NotificationReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        String taskTitle = intent.getStringExtra("taskTitle");
+        if (intent != null) {
+            String taskTitle = intent.getStringExtra("taskTitle");
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("Reminder: " + taskTitle)
-                .setContentText("This is your reminder for the task.")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+            // Handle null taskTitle gracefully
+            if (taskTitle == null) {
+                taskTitle = "Task Reminder"; // Default fallback title
+            }
 
-        NotificationManager notificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (notificationManager != null) {
-            notificationManager.notify(taskTitle.hashCode(), builder.build());
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setContentTitle("Reminder: " + taskTitle)
+                    .setContentText("This is your reminder for the task.")
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+            NotificationManager notificationManager =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null) {
+                // Use a safe fallback for hashCode in case taskTitle was null
+                notificationManager.notify(taskTitle.hashCode(), builder.build());
+            }
+        } else {
+            // Log an error or handle the null intent scenario
+            android.util.Log.e("NotificationReceiver", "Received null intent in onReceive.");
         }
     }
 }

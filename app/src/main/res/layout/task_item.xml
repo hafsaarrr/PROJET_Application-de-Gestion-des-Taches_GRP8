@@ -28,12 +28,13 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+
             <TextView
                 android:id="@+id/task_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="#FCF5FD" />
+                android:textColor="#FCF5FD"/>
 
             <TextView
                 android:id="@+id/task_priority"

@@ -115,8 +115,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             selectQuery = "SELECT * FROM " + TABLE_TASKS + " WHERE " + KEY_COMPLETED + "=" + completedStatus;
         }
 
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        SQLiteDatabase db = this.getReadableDatabase(); //cnx a la base de donnees
+        Cursor cursor = db.rawQuery(selectQuery, null); //retourne un curseur  lecture de resultat
 
         if (cursor.moveToFirst()) {
             do {
